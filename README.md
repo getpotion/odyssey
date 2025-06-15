@@ -15,7 +15,6 @@ Odyssey is an Identity and Access Management (IAM) service designed for Potion, 
 
 - Elixir 1.15+ and Erlang/OTP 26+
 - PostgreSQL 15+
-- Redis (for token storage)
 - SMTP server for email delivery
 
 ## Installation
@@ -55,9 +54,6 @@ Key environment variables:
 ```env
 # Database
 DATABASE_URL=postgres://user:pass@localhost/odyssey_dev
-
-# Redis
-REDIS_URL=redis://localhost:6379
 
 # JWT
 JWT_SECRET=your-secret-key
