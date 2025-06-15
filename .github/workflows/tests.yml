@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'
+      - 'bugfix/*'
+      - 'hotfix/*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: 1.16.3
+          otp-version: 26.2.1
+      
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: "${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}"
+          restore-keys: ${{ runner.os }}-mix-
+      
+      - name: Install dependencies
+        run: mix deps.get
+      
+      - name: Run linter
+        run: mix credo
+
+      - name: Run tests
+        env:
+          MIX_ENV: test
+        run: mix test
