@@ -36,4 +36,32 @@ defmodule Odyssey.Email do
     |> verification_email(token)
     |> deliver_later()
   end
+
+  def two_factor_recovery_email(email, token) do
+    new_email()
+    |> to(email)
+    |> from("noreply@" <> domain())
+    |> subject("Reset your 2FA settings")
+    |> html_body("""
+      <h1>Reset your 2FA settings</h1>
+      <p>You requested to reset your 2FA settings. Click the link below to proceed:</p>
+      <p><a href=\"http://#{domain()}/v1/api/users/2fa/recovery/#{token}\">Reset 2FA Settings</a></p>
+      <p>This link will expire in 1 hour.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+    """)
+    |> text_body("""
+      Reset your 2FA settings
+      You requested to reset your 2FA settings. Visit the link below to proceed:
+      http://#{domain()}/v1/api/users/2fa/recovery/#{token}
+      This link will expire in 1 hour.
+      If you didn't request this, please ignore this email.
+    """)
+  end
+
+  @impl true
+  def send_2fa_recovery_email(email, token) do
+    email
+    |> two_factor_recovery_email(token)
+    |> deliver_later()
+  end
 end

@@ -4,4 +4,5 @@ defmodule Odyssey.EmailStub do
   """
   @behaviour Odyssey.Email.Behaviour
   def send_verification_email(_email, _url), do: :ok
+  def send_2fa_recovery_email(_email, _token), do: :ok
 end

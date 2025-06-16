@@ -42,6 +42,11 @@ defmodule OdysseyWeb.Router do
     get "/login/poll", User.Controller, :login_poll
     get "/login/poll/:token_id", User.Controller, :login_poll
     post "/login/verify-2fa", User.Controller, :verify_2fa
+
+    # 2FA Recovery routes
+    post "/users/2fa/recovery", User.Controller, :recover_2fa
+    post "/users/2fa/recovery/email", User.Controller, :request_2fa_recovery
+    post "/users/2fa/recovery/:token", User.Controller, :complete_2fa_recovery
   end
 
   # Other scopes may use custom stacks.

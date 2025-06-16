@@ -97,4 +97,78 @@ defmodule Odyssey.Accounts do
 
     email_adapter().send_verification_email(user.email, verification_url)
   end
+
+  def validate_recovery_code(user_id, code) do
+    user = get_user_by_user_id(user_id)
+
+    case user do
+      {:ok, user} ->
+        if code in user.recovery_codes do
+          # Remove the used recovery code
+          updated_codes = Enum.reject(user.recovery_codes, &(&1 == code))
+
+          user
+          |> User.update_changeset(%{recovery_codes: updated_codes})
+          |> Repo.update()
+        else
+          {:error, :invalid_code}
+        end
+
+      {:error, _reason} ->
+        {:error, :invalid_code}
+    end
+  end
+
+  def create_2fa_recovery_request(user) do
+    token = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
+    expires_at = DateTime.utc_now() |> DateTime.add(3600) |> DateTime.to_naive()
+
+    user
+    |> User.update_changeset(%{
+      verification_token: token,
+      verification_token_expires_at: expires_at
+    })
+    |> Repo.update()
+    |> case do
+      {:ok, user} -> {:ok, user.verification_token}
+      {:error, _reason} -> {:error, :failed_to_create_request}
+    end
+  end
+
+  def validate_recovery_token(token) do
+    user = get_user_by_verification_token(token)
+
+    cond do
+      is_nil(user) ->
+        {:error, :invalid_token}
+
+      is_nil(user.verification_token_expires_at) ->
+        {:error, :invalid_token}
+
+      true ->
+        expires_at =
+          case user.verification_token_expires_at do
+            %NaiveDateTime{} = naive -> DateTime.from_naive!(naive, "Etc/UTC")
+            %DateTime{} = dt -> dt
+          end
+
+        if DateTime.compare(expires_at, DateTime.utc_now()) == :lt do
+          {:error, :invalid_token}
+        else
+          {:ok, user}
+        end
+    end
+  end
+
+  def reset_2fa_setup(user) do
+    user
+    |> User.update_changeset(%{
+      two_factor_enabled: false,
+      two_factor_secret: nil,
+      recovery_codes: [],
+      verification_token: nil,
+      verification_token_expires_at: nil
+    })
+    |> Repo.update()
+  end
 end
