@@ -221,6 +221,54 @@ Response:
 }
 ```
 
+#### Recover 2FA with Recovery Code
+```http
+POST /v1/api/users/2fa/recovery
+Content-Type: application/json
+
+{
+  "token_id": "abc123",
+  "recovery_code": "ABCD-1234"
+}
+```
+
+Response:
+```json
+{
+  "token": "jwt_token_here"
+}
+```
+
+#### Request 2FA Recovery via Email
+```http
+POST /v1/api/users/2fa/recovery/email
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+```
+
+Response:
+```json
+{
+  "message": "Recovery email sent."
+}
+```
+
+#### Complete 2FA Recovery
+```http
+POST /v1/api/users/2fa/recovery/:token
+```
+
+Response:
+```json
+{
+  "token": "jwt_token_here",
+  "message": "2FA has been disabled. Please set up 2FA again for security."
+}
+```
+
 ## User Flows
 
 ### Registration Flow
