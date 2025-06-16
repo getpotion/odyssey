@@ -1,4 +1,4 @@
-defmodule OdysseyWeb.PageHTML do
+defmodule OdysseyWeb.Page.HTML do
   @moduledoc """
   This module contains pages rendered by PageController.
 
@@ -6,5 +6,5 @@ defmodule OdysseyWeb.PageHTML do
   """
   use OdysseyWeb, :html
 
-  embed_templates "page_html/*"
+  embed_templates "html/*"
 end

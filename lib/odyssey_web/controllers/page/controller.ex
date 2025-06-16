@@ -1,4 +1,9 @@
-defmodule OdysseyWeb.PageController do
+defmodule OdysseyWeb.Page.Controller do
+  @moduledoc """
+  Handles page rendering for the main application pages.
+  Provides the home page endpoint with custom layout rendering.
+  """
+
   use OdysseyWeb, :controller
 
   def home(conn, _params) do

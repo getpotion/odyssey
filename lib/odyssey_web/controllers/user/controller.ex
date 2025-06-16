@@ -1,4 +1,9 @@
-defmodule OdysseyWeb.UserController do
+defmodule OdysseyWeb.User.Controller do
+  @moduledoc """
+  Handles user registration and email verification operations.
+  Provides endpoints for user registration and email verification token validation.
+  """
+
   use OdysseyWeb, :controller
 
   defp accounts, do: Application.get_env(:odyssey, :accounts, Odyssey.Accounts)

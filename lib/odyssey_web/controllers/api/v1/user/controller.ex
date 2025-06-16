@@ -1,4 +1,10 @@
-defmodule OdysseyWeb.API.V1.UserController do
+defmodule OdysseyWeb.API.V1.User.Controller do
+  @moduledoc """
+  Handles user authentication and login operations via the API.
+  Provides endpoints for login initialization, polling, and 2FA verification.
+  Manages JWT token generation and login token state.
+  """
+
   use OdysseyWeb, :controller
 
   alias Odyssey.Accounts

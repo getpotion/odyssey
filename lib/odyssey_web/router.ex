@@ -21,27 +21,27 @@ defmodule OdysseyWeb.Router do
   scope "/", OdysseyWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-    post "/users/register", UserController, :register
-    get "/users/verify/:token", UserController, :verify
+    get "/", Page.Controller, :home
+    post "/users/register", User.Controller, :register
+    get "/users/verify/:token", User.Controller, :verify
   end
 
   scope "/", OdysseyWeb do
     pipe_through [:browser, :auth]
 
-    get "/users/2fa/setup", User2FAController, :setup
-    post "/users/2fa/setup/verify", User2FAController, :verify_setup
-    get "/users/2fa", User2FAController, :verify
-    post "/users/2fa/verify", User2FAController, :verify_code
+    get "/users/2fa/setup", User.TwoFactor.Controller, :setup
+    post "/users/2fa/setup/verify", User.TwoFactor.Controller, :verify_setup
+    get "/users/2fa", User.TwoFactor.Controller, :verify
+    post "/users/2fa/verify", User.TwoFactor.Controller, :verify_code
   end
 
   scope "/v1/api", OdysseyWeb.API.V1 do
     pipe_through :api
 
-    post "/login", UserController, :login_init
-    get "/login/poll", UserController, :login_poll
-    get "/login/poll/:token_id", UserController, :login_poll
-    post "/login/verify-2fa", UserController, :verify_2fa
+    post "/login", User.Controller, :login_init
+    get "/login/poll", User.Controller, :login_poll
+    get "/login/poll/:token_id", User.Controller, :login_poll
+    post "/login/verify-2fa", User.Controller, :verify_2fa
   end
 
   # Other scopes may use custom stacks.

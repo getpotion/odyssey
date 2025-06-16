@@ -1,4 +1,4 @@
-defmodule OdysseyWeb.API.V1.UserControllerTest do
+defmodule OdysseyWeb.API.V1.User.ControllerTest do
   @moduledoc """
   Tests for the UserController.
   """

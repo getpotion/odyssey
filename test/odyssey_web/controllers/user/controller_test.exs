@@ -1,4 +1,4 @@
-defmodule OdysseyWeb.UserControllerTest do
+defmodule OdysseyWeb.User.ControllerTest do
   use OdysseyWeb.ConnCase, async: true
 
   import Mox

@@ -1,4 +1,9 @@
-defmodule OdysseyWeb.User2FAController do
+defmodule OdysseyWeb.User.TwoFactor.Controller do
+  @moduledoc """
+  Handles two-factor authentication operations including setup, verification, and code validation.
+  Provides endpoints for enabling 2FA, verifying setup, and validating 2FA codes during login.
+  """
+
   use OdysseyWeb, :controller
 
   alias Odyssey.Accounts

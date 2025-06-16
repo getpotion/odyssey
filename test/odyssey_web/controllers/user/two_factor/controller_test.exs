@@ -1,6 +1,6 @@
 import Mox
 
-defmodule OdysseyWeb.User2FAControllerTest do
+defmodule OdysseyWeb.User.TwoFactor.ControllerTest do
   use OdysseyWeb.ConnCase
   alias Odyssey.Accounts
   alias Odyssey.Accounts.TwoFactor

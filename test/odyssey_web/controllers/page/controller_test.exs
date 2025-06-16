@@ -1,4 +1,4 @@
-defmodule OdysseyWeb.PageControllerTest do
+defmodule OdysseyWeb.Page.ControllerTest do
   use OdysseyWeb.ConnCase
 
   test "GET /", %{conn: conn} do
