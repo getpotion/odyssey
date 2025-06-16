@@ -25,7 +25,8 @@ config :odyssey, OdysseyWeb.Endpoint,
   server: false
 
 # In test we don't send emails
-config :odyssey, Odyssey.Mailer, adapter: Swoosh.Adapters.Test
+config :odyssey, Odyssey.Mailer,
+  adapter: Bamboo.TestAdapter
 
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
@@ -41,5 +42,5 @@ config :phoenix_live_view,
   enable_expensive_runtime_checks: true
 
 config :odyssey, OdysseyWeb, domain: "localhost"
-config :odyssey, :email_adapter, Odyssey.EmailMock
+config :odyssey, :email_adapter, Odyssey.EmailStub
 config :odyssey, :accounts, Odyssey.AccountsMock

@@ -139,4 +139,112 @@ defmodule OdysseyWeb.API.V1.User.ControllerTest do
       assert %{"errors" => %{"detail" => "User not found"}} = json_response(conn, 404)
     end
   end
+
+  describe "2FA recovery" do
+    test "successfully recovers using a valid recovery code", %{conn: conn} do
+      user = Factory.insert(:user,
+        two_factor_enabled: true,
+        two_factor_secret: "secret",
+        recovery_codes: ["ABCD-1234", "EFGH-5678"]
+      )
+      token_id = LoginToken.generate_token_id()
+      LoginToken.store_token(token_id, user.user_id)
+
+      conn =
+        post(conn, "/v1/api/users/2fa/recovery", %{
+          token_id: token_id,
+          recovery_code: "ABCD-1234"
+        })
+
+      assert %{"token" => token} = json_response(conn, 200)
+      assert JWT.verify_token(token)
+
+      # Verify the recovery code was consumed
+      {:ok, updated_user} = Odyssey.Accounts.get_user_by_user_id(user.user_id)
+      assert updated_user.recovery_codes == ["EFGH-5678"]
+    end
+
+    test "fails recovery with invalid recovery code", %{conn: conn} do
+      user = Factory.insert(:user,
+        two_factor_enabled: true,
+        two_factor_secret: "secret",
+        recovery_codes: ["ABCD-1234"]
+      )
+      token_id = LoginToken.generate_token_id()
+      LoginToken.store_token(token_id, user.user_id)
+
+      conn =
+        post(conn, "/v1/api/users/2fa/recovery", %{
+          token_id: token_id,
+          recovery_code: "INVALID-5678"
+        })
+
+      assert %{"errors" => %{"detail" => "Invalid or used recovery code"}} = json_response(conn, 400)
+
+      # Verify recovery codes remain unchanged
+      {:ok, updated_user} = Odyssey.Accounts.get_user_by_user_id(user.user_id)
+      assert updated_user.recovery_codes == ["ABCD-1234"]
+    end
+
+    test "successfully initiates email recovery after failed attempts", %{conn: conn} do
+      user = Factory.insert(:user,
+        two_factor_enabled: true,
+        two_factor_secret: "secret"
+      )
+
+      conn =
+        post(conn, "/v1/api/users/2fa/recovery/email", %{
+          email: user.email
+        })
+
+      assert %{"message" => "Recovery email sent."} = json_response(conn, 200)
+
+      # Verify recovery token was created
+      {:ok, updated_user} = Odyssey.Accounts.get_user_by_user_id(user.user_id)
+      assert updated_user.verification_token != nil
+      assert updated_user.verification_token_expires_at != nil
+    end
+
+    test "fails email recovery for non-2FA account", %{conn: conn} do
+      user = Factory.insert(:user, two_factor_enabled: false)
+
+      conn =
+        post(conn, "/v1/api/users/2fa/recovery/email", %{
+          email: user.email
+        })
+
+      assert %{"errors" => %{"detail" => "2FA is not enabled for this account"}} = json_response(conn, 400)
+    end
+
+    test "successfully completes email recovery", %{conn: conn} do
+      user = Factory.insert(:user,
+        two_factor_enabled: true,
+        two_factor_secret: "secret",
+        recovery_codes: ["ABCD-1234"]
+      )
+      {:ok, recovery_token} = Odyssey.Accounts.create_2fa_recovery_request(user)
+
+      conn =
+        post(conn, "/v1/api/users/2fa/recovery/#{recovery_token}")
+
+      assert %{
+        "token" => token,
+        "message" => "2FA has been disabled. Please set up 2FA again for security."
+      } = json_response(conn, 200)
+      assert JWT.verify_token(token)
+
+      # Verify 2FA was disabled
+      {:ok, updated_user} = Odyssey.Accounts.get_user_by_user_id(user.user_id)
+      assert updated_user.two_factor_enabled == false
+      assert updated_user.two_factor_secret == nil
+      assert updated_user.recovery_codes == []
+    end
+
+    test "fails email recovery with invalid token", %{conn: conn} do
+      conn =
+        post(conn, "/v1/api/users/2fa/recovery/invalid_token")
+
+      assert %{"errors" => %{"detail" => "Invalid or expired recovery token"}} = json_response(conn, 400)
+    end
+  end
 end

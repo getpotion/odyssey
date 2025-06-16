@@ -30,13 +30,6 @@ defmodule Odyssey.Email do
     """)
   end
 
-  @impl true
-  def send_verification_email(email, token) do
-    email
-    |> verification_email(token)
-    |> deliver_later()
-  end
-
   def two_factor_recovery_email(email, token) do
     new_email()
     |> to(email)
@@ -59,9 +52,24 @@ defmodule Odyssey.Email do
   end
 
   @impl true
+  def send_verification_email(email, token) do
+    if Mix.env() == :test do
+      :ok
+    else
+      email
+      |> verification_email(token)
+      |> deliver_later()
+    end
+  end
+
+  @impl true
   def send_2fa_recovery_email(email, token) do
-    email
-    |> two_factor_recovery_email(token)
-    |> deliver_later()
+    if Mix.env() == :test do
+      :ok
+    else
+      email
+      |> two_factor_recovery_email(token)
+      |> deliver_later()
+    end
   end
 end

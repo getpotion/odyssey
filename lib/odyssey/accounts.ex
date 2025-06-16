@@ -167,7 +167,7 @@ defmodule Odyssey.Accounts do
       two_factor_secret: nil,
       recovery_codes: [],
       verification_token: nil,
-      verification_token_expires_at: nil
+      verification_token_expires_at: ~N[1970-01-01 00:00:00]
     })
     |> Repo.update()
   end

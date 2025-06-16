@@ -140,32 +140,47 @@ defmodule OdysseyWeb.API.V1.User.Controller do
 
   def request_2fa_recovery(conn, %{"email" => email}) do
     case Accounts.get_user_by_email(email) do
-      {:ok, user} ->
-        if user.two_factor_enabled do
-          case Accounts.create_2fa_recovery_request(user) do
-            {:ok, recovery_token} ->
-              Email.send_2fa_recovery_email(user.email, recovery_token)
-
-              conn
-              |> put_status(:ok)
-              |> json(%{message: "Recovery email sent."})
-
-            {:error, _reason} ->
-              conn
-              |> put_status(:internal_server_error)
-              |> json(%{errors: %{detail: "Failed to create recovery request"}})
-          end
-        else
-          conn
-          |> put_status(:bad_request)
-          |> json(%{errors: %{detail: "2FA is not enabled for this account"}})
-        end
-
-      {:error, :not_found} ->
-        conn
-        |> put_status(:not_found)
-        |> json(%{errors: %{detail: "Account not found"}})
+      nil ->
+        handle_user_not_found(conn)
+      user ->
+        handle_2fa_recovery_request(conn, user)
     end
+  end
+
+  defp handle_user_not_found(conn) do
+    conn
+    |> put_status(:not_found)
+    |> json(%{errors: %{detail: "Account not found"}})
+  end
+
+  defp handle_2fa_recovery_request(conn, user) do
+    if user.two_factor_enabled do
+      create_recovery_request(conn, user)
+    else
+      handle_2fa_not_enabled(conn)
+    end
+  end
+
+  defp create_recovery_request(conn, user) do
+    case Accounts.create_2fa_recovery_request(user) do
+      {:ok, recovery_token} ->
+        Email.send_2fa_recovery_email(user.email, recovery_token)
+
+        conn
+        |> put_status(:ok)
+        |> json(%{message: "Recovery email sent."})
+
+      {:error, _reason} ->
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{errors: %{detail: "Failed to create recovery request"}})
+    end
+  end
+
+  defp handle_2fa_not_enabled(conn) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{errors: %{detail: "2FA is not enabled for this account"}})
   end
 
   def complete_2fa_recovery(conn, %{"token" => token}) do
